@@ -1,0 +1,1 @@
+# Kruskals-Algoritma
