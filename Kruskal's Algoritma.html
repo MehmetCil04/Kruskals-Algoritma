@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kruskal's Algoritması - MST Görselleştirme</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 18px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            grid-column: 1 / -1;
+        }
+
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            font-size: 11px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        input, select {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-card h3 {
+            font-size: 10px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card div {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+
+        .canvas-container {
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            height: 75vh;
+        }
+
+        canvas {
+            display: block;
+            cursor: crosshair;
+            width: 100%;
+            height: 100%;
+        }
+
+        .canvas-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            z-index: 10;
+        }
+
+        .canvas-controls button {
+            padding: 6px 10px;
+            font-size: 10px;
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .edge-list {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            height: 350px;
+            overflow-y: auto;
+        }
+
+        .edge-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .edge-item.current {
+            background: rgba(33, 150, 243, 0.6);
+            box-shadow: 0 2px 10px rgba(33, 150, 243, 0.3);
+            border: 2px solid #2196F3;
+            margin: 8px 0;
+        }
+
+        .edge-item.accepted {
+            background: rgba(76, 175, 80, 0.6);
+            box-shadow: 0 2px 10px rgba(76, 175, 80, 0.3);
+        }
+
+        .edge-item.rejected {
+            background: rgba(244, 67, 54, 0.6);
+            box-shadow: 0 2px 10px rgba(244, 67, 54, 0.3);
+        }
+
+        .edge-item.pending {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .union-find-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            flex: 1;
+        }
+
+        .union-find-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px;
+            margin: 3px 0;
+            border-radius: 5px;
+            font-size: 11px;
+        }
+
+        .union-find-item.highlight {
+            background: rgba(255, 235, 59, 0.3);
+        }
+
+        .algorithm-info {
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            grid-column: 1 / -1;
+        }
+
+        .step-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #ff6b6b;
+            font-size: 13px;
+        }
+
+        .legend {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+        }
+
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .zoom-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            z-index: 10;
+        }
+
+        @media (max-width: 1400px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .side-panel {
+                flex-direction: row;
+                gap: 20px;
+            }
+            
+            .edge-list, .union-find-panel {
+                height: 250px;
+                flex: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .side-panel {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .edge-list, .union-find-panel {
+                height: 200px;
+            }
+            
+            .canvas-container {
+                height: 50vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Kruskal's Minimum Spanning Tree Algoritması</h1>
+            <p>Union-Find Veri Yapısı | Edge Sorting | Cycle Detection | MST Construction</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Düğüm Sayısı:</label>
+                <input type="number" id="nodeCount" value="15" min="5" max="100">
+            </div>
+            <div class="control-group">
+                <label>Düzen Tipi:</label>
+                <select id="layoutType">
+                    <option value="force">Force-Directed</option>
+                    <option value="grid">Grid Düzen</option>
+                    <option value="circular" selected>Dairesel</option>
+                    <option value="random">Rastgele</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Graf Yoğunluğu:</label>
+                <select id="density">
+                    <option value="sparse">Seyrek</option>
+                    <option value="medium" selected>Orta</option>
+                    <option value="dense">Yoğun</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Animasyon Hızı:</label>
+                <select id="speed">
+                    <option value="100">Çok Hızlı</option>
+                    <option value="500">Hızlı</option>
+                    <option value="1000" selected>Orta</option>
+                    <option value="2000">Yavaş</option>
+                    <option value="3000">Çok Yavaş</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Görselleştirme:</label>
+                <select id="visualMode">
+                    <option value="standard" selected>Standart</option>
+                    <option value="union_focus">Union-Find Odaklı</option>
+                    <option value="edge_focus">Kenar Odaklı</option>
+                    <option value="tree_growth">Ağaç Büyümesi</option>
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button onclick="app.generateGraph()">Yeni Graf</button>
+                <button onclick="app.optimizeLayout()">Düzen Optimize</button>
+                <button onclick="app.startKruskals()" id="startBtn">Kruskal's Başlat</button>
+                <button onclick="app.resetVisualization()">Sıfırla</button>
+                <button onclick="app.togglePause()" id="pauseBtn" disabled>Duraklat</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Düğüm</h3>
+                <div id="totalNodes">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Kenar</h3>
+                <div id="totalEdges">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>MST</h3>
+                <div id="mstEdges">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Maliyet</h3>
+                <div id="totalCost">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>İşlenen</h3>
+                <div id="processedEdges">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Adım</h3>
+                <div id="currentStep">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Progress</h3>
+                <div id="progress">0%</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="canvas-container">
+                <canvas id="graphCanvas"></canvas>
+                <div class="canvas-controls">
+                    <button onclick="app.zoomIn()">Zoom +</button>
+                    <button onclick="app.zoomOut()">Zoom -</button>
+                    <button onclick="app.resetView()">Reset View</button>
+                    <button onclick="app.centerGraph()">Center</button>
+                </div>
+                <div class="zoom-info">
+                    Zoom: <span id="zoomLevel">100%</span> | MST Construction | Edge Weights
+                </div>
+            </div>
+
+            <div class="side-panel">
+                <div class="edge-list">
+                    <h3 style="margin-bottom: 10px; text-align: center;">Kenar Listesi (Ağırlığa Göre Sıralı)</h3>
+                    <div id="edgeListContainer"></div>
+                </div>
+
+                <div class="union-find-panel">
+                    <h3 style="margin-bottom: 10px; text-align: center;">Union-Find Yapısı</h3>
+                    <div id="unionFindContainer"></div>
+                    
+                    <!-- Algoritma açıklaması küçük graflar için -->
+                    <div id="algorithmHelp" style="
+                        margin-top: 10px; 
+                        padding: 8px; 
+                        background: rgba(255, 255, 255, 0.05); 
+                        border-radius: 6px; 
+                        font-size: 9px; 
+                        line-height: 1.3;
+                        display: none;
+                    ">
+                        <strong>Union-Find Nasıl Çalışır:</strong><br>
+                        • Her düğüm başlangıçta kendi component'inde<br>
+                        • Kenar kabul edilince iki component birleşir<br>
+                        • Aynı component'teki düğümler cycle oluşturur
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: rgba(255,255,255,0.3);"></div>
+                <span>Normal Kenar</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #2196F3;"></div>
+                <span>İnceleniyor</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4CAF50;"></div>
+                <span>MST'ye Eklendi</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f44336;"></div>
+                <span>Reddedildi (Cycle)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: rgba(255,255,255,0.8);"></div>
+                <span>Düğüm</span>
+            </div>
+        </div>
+
+        <div class="algorithm-info">
+            <h3>Kruskal's Minimum Spanning Tree Algoritması</h3>
+            <p>Kruskal algoritması, ağırlıklı bağlantılı bir grafın minimum spanning tree'sini (MST) bulan greedy algoritmadır. Union-Find veri yapısını kullanarak cycle detection yapar.</p>
+            
+            <div class="step-info" id="stepInfo">
+                <strong>Durum:</strong> Graf oluşturuluyor...
+            </div>
+
+            <h4 style="margin-top: 15px;">Algoritmanın Adımları:</h4>
+            <ol style="margin-top: 10px; margin-left: 20px; font-size: 12px;">
+                <li>Tüm kenarları ağırlıklarına göre artan sırada sırala</li>
+                <li>Her düğüm için ayrı bir set oluştur (Union-Find başlangıcı)</li>
+                <li>Sıralanmış kenar listesini dolaş:
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>Kenarın iki ucundaki düğümlerin setlerini kontrol et</li>
+                        <li>Farklı setlerdeyse: Kenarı MST'ye ekle ve setleri birleştir</li>
+                        <li>Aynı setteyse: Kenarı reddet (cycle oluşturur)</li>
+                    </ul>
+                </li>
+                <li>MST tamamlandığında dur (V-1 kenar)</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        class UnionFind {
+            constructor(n) {
+                this.parent = Array.from({length: n}, (_, i) => i);
+                this.rank = new Array(n).fill(0);
+                this.components = n;
+            }
+
+            find(x) {
+                if (this.parent[x] !== x) {
+                    this.parent[x] = this.find(this.parent[x]); // Path compression
+                }
+                return this.parent[x];
+            }
+
+            union(x, y) {
+                const rootX = this.find(x);
+                const rootY = this.find(y);
+
+                if (rootX === rootY) return false; // Already connected
+
+                // Union by rank
+                if (this.rank[rootX] < this.rank[rootY]) {
+                    this.parent[rootX] = rootY;
+                } else if (this.rank[rootX] > this.rank[rootY]) {
+                    this.parent[rootY] = rootX;
+                } else {
+                    this.parent[rootY] = rootX;
+                    this.rank[rootX]++;
+                }
+
+                this.components--;
+                return true;
+            }
+
+            connected(x, y) {
+                return this.find(x) === this.find(y);
+            }
+
+            getComponents() {
+                const components = new Map();
+                for (let i = 0; i < this.parent.length; i++) {
+                    const root = this.find(i);
+                    if (!components.has(root)) {
+                        components.set(root, []);
+                    }
+                    components.get(root).push(i);
+                }
+                return Array.from(components.values());
+            }
+        }
+
+        class Graph {
+            constructor() {
+                this.nodes = new Map();
+                this.edges = [];
+                this.nodeCount = 0;
+            }
+
+            addNode(id, x, y) {
+                this.nodes.set(id, {
+                    id: id,
+                    x: x,
+                    y: y,
+                    vx: 0,
+                    vy: 0,
+                    component: id
+                });
+                this.nodeCount++;
+            }
+
+            addEdge(from, to, weight) {
+                this.edges.push({
+                    from: from,
+                    to: to,
+                    weight: weight,
+                    status: 'pending', // pending, current, accepted, rejected
+                    id: `${from}-${to}`
+                });
+            }
+
+            sortEdges() {
+                this.edges.sort((a, b) => a.weight - b.weight);
+            }
+
+            reset() {
+                this.edges.forEach(edge => {
+                    edge.status = 'pending';
+                });
+                this.nodes.forEach(node => {
+                    node.component = node.id;
+                });
+            }
+        }
+
+        class KruskalsApp {
+            constructor() {
+                this.canvas = document.getElementById('graphCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.graph = new Graph();
+                
+                this.camera = { x: 0, y: 0, zoom: 1 };
+                this.mouse = { x: 0, y: 0, isDragging: false, dragStart: {x: 0, y: 0}, cameraStart: {x: 0, y: 0} };
+                
+                this.isRunning = false;
+                this.isPaused = false;
+                this.stepMode = false;
+                this.stepWaiting = false;
+                this.shouldStop = false; // Animasyonu durdurmak için flag
+                this.currentStep = 0;
+                this.animationSpeed = 1000;
+                
+                this.unionFind = null;
+                this.mstEdges = [];
+                this.totalCost = 0;
+                this.currentEdgeIndex = 0;
+                
+                this.nodeRadius = 8;
+                this.lastFrameTime = 0;
+                this.fps = 60;
+                this.highlightedEdge = null;
+                this.previewEdge = null;
+                this.userScrolledEdgeList = false;
+                this.edgeListScrollListener = false;
+                this.scrollResetTimeout = null;
+
+                this.setupCanvas();
+                this.setupEvents();
+                this.generateGraph();
+                this.startRenderLoop();
+            }
+
+            setupCanvas() {
+                const container = this.canvas.parentElement;
+                const rect = container.getBoundingClientRect();
+                this.canvas.width = rect.width * devicePixelRatio;
+                this.canvas.height = rect.height * devicePixelRatio;
+                this.canvas.style.width = rect.width + 'px';
+                this.canvas.style.height = rect.height + 'px';
+                this.ctx.scale(devicePixelRatio, devicePixelRatio);
+            }
+
+            setupEvents() {
+                this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
+                this.canvas.addEventListener('wheel', (e) => this.handleWheel(e));
+                window.addEventListener('resize', () => this.setupCanvas());
+                this.canvas.addEventListener('contextmenu', e => e.preventDefault());
+                
+                // Animasyon hızı değişimi için event listener
+                document.getElementById('speed').addEventListener('change', () => {
+                    this.animationSpeed = parseInt(document.getElementById('speed').value);
+                });
+                
+                // Görselleştirme modu değişimi için event listener
+                document.getElementById('visualMode').addEventListener('change', () => {
+                    this.updateVisualizationMode();
+                });
+            }
+
+            updateVisualizationMode() {
+                // Görselleştirme modunu güncelleyen fonksiyon
+                const mode = document.getElementById('visualMode').value;
+                // Bu fonksiyon animasyon sırasında görselleştirme modunu değiştirmeyi sağlar
+                // Şu anda sadece interface hazırlığı yapıyoruz
+            }
+
+            handleMouseDown(event) {
+                const rect = this.canvas.getBoundingClientRect();
+                this.mouse.x = event.clientX - rect.left;
+                this.mouse.y = event.clientY - rect.top;
+                
+                if (event.button === 0) {
+                    this.mouse.isDragging = true;
+                    this.mouse.dragStart = { x: this.mouse.x, y: this.mouse.y };
+                    this.mouse.cameraStart = { x: this.camera.x, y: this.camera.y };
+                }
+            }
+
+            handleMouseMove(event) {
+                const rect = this.canvas.getBoundingClientRect();
+                this.mouse.x = event.clientX - rect.left;
+                this.mouse.y = event.clientY - rect.top;
+                
+                if (this.mouse.isDragging) {
+                    const dx = this.mouse.x - this.mouse.dragStart.x;
+                    const dy = this.mouse.y - this.mouse.dragStart.y;
+                    
+                    this.camera.x = this.mouse.cameraStart.x - dx / this.camera.zoom;
+                    this.camera.y = this.mouse.cameraStart.y - dy / this.camera.zoom;
+                }
+            }
+
+            handleMouseUp() {
+                this.mouse.isDragging = false;
+            }
+
+            handleWheel(event) {
+                event.preventDefault();
+                const rect = this.canvas.getBoundingClientRect();
+                const mouseX = event.clientX - rect.left;
+                const mouseY = event.clientY - rect.top;
+                
+                const worldBefore = this.screenToWorld(mouseX, mouseY);
+                const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
+                this.camera.zoom = Math.max(0.1, Math.min(5, this.camera.zoom * zoomFactor));
+                
+                const worldAfter = this.screenToWorld(mouseX, mouseY);
+                this.camera.x += worldBefore.x - worldAfter.x;
+                this.camera.y += worldBefore.y - worldAfter.y;
+                
+                this.updateZoomDisplay();
+            }
+
+            screenToWorld(screenX, screenY) {
+                return {
+                    x: (screenX / this.camera.zoom) + this.camera.x,
+                    y: (screenY / this.camera.zoom) + this.camera.y
+                };
+            }
+
+            worldToScreen(worldX, worldY) {
+                return {
+                    x: (worldX - this.camera.x) * this.camera.zoom,
+                    y: (worldY - this.camera.y) * this.camera.zoom
+                };
+            }
+
+            generateGraph() {
+                const nodeCount = parseInt(document.getElementById('nodeCount').value);
+                const layoutType = document.getElementById('layoutType').value;
+                const density = document.getElementById('density').value;
+                
+                this.graph = new Graph();
+                this.mstEdges = [];
+                this.totalCost = 0;
+                this.currentStep = 0;
+                this.currentEdgeIndex = 0;
+
+                this.createNodes(nodeCount, layoutType);
+                this.createEdges(density);
+                this.graph.sortEdges();
+                
+                if (layoutType === 'force') {
+                    this.applyForceLayout();
+                }
+
+                this.centerGraph();
+                this.updateStats();
+                this.updateEdgeList();
+                this.updateUnionFindDisplay();
+                this.updateStepInfo('Graf oluşturuldu. Kenarlar ağırlığa göre sıralandı. "Kruskal\'s Başlat" butonuna tıklayın.');
+            }
+
+            createNodes(count, layoutType) {
+                const baseWidth = this.canvas.width / devicePixelRatio;
+                const baseHeight = this.canvas.height / devicePixelRatio;
+                const scaleFactor = Math.max(1.5, Math.sqrt(count / 30)); // Daha geniş düzen için
+                const cw = baseWidth * scaleFactor;
+                const ch = baseHeight * scaleFactor;
+                const margin = 80; // Marjini azalt
+                
+                for (let i = 0; i < count; i++) {
+                    let x, y;
+                    
+                    switch (layoutType) {
+                        case 'grid':
+                            const cols = Math.ceil(Math.sqrt(count));
+                            const rows = Math.ceil(count / cols);
+                            const cellW = (cw - 2 * margin) / cols;
+                            const cellH = (ch - 2 * margin) / rows;
+                            x = margin + (i % cols) * cellW + cellW / 2;
+                            y = margin + Math.floor(i / cols) * cellH + cellH / 2;
+                            break;
+                            
+                        case 'circular':
+                            const radius = Math.min(cw, ch) / 3.5; // Daha büyük çember
+                            const angle = (i / count) * 2 * Math.PI;
+                            x = cw / 2 + radius * Math.cos(angle);
+                            y = ch / 2 + radius * Math.sin(angle);
+                            break;
+                            
+                        default:
+                            x = margin + Math.random() * (cw - 2 * margin);
+                            y = margin + Math.random() * (ch - 2 * margin);
+                            break;
+                    }
+                    
+                    this.graph.addNode(i, x, y);
+                }
+            }
+
+            createEdges(density) {
+                const densityMap = { 
+                    sparse: 0.015,   // Biraz artırdık
+                    medium: 0.025,   // Orta yoğunluk  
+                    dense: 0.045     // Yoğun bağlantı
+                };
+                const connectionProbability = densityMap[density];
+                const nodes = Array.from(this.graph.nodes.keys());
+                
+                // Akıllı kenar oluşturma - sadece yakın düğümler
+                for (let i = 0; i < nodes.length; i++) {
+                    const node1 = this.graph.nodes.get(nodes[i]);
+                    const distances = [];
+                    
+                    // Tüm düğümlere olan mesafeleri hesapla
+                    for (let j = 0; j < nodes.length; j++) {
+                        if (i !== j) {
+                            const node2 = this.graph.nodes.get(nodes[j]);
+                            const distance = Math.sqrt((node1.x - node2.x) ** 2 + (node1.y - node2.y) ** 2);
+                            distances.push({ nodeId: nodes[j], distance });
+                        }
+                    }
+                    
+                    // Mesafeye göre sırala
+                    distances.sort((a, b) => a.distance - b.distance);
+                    
+                    // Daha fazla bağlantı için maksimum sayıyı artır
+                    const maxConnections = Math.min(
+                        Math.max(4, Math.floor(Math.sqrt(nodes.length) * 0.8)), // Artırıldı
+                        distances.length
+                    );
+                    
+                    for (let k = 0; k < maxConnections; k++) {
+                        // Yakın düğümlere daha yüksek olasılık
+                        const distanceFactor = 1 - (k / maxConnections);
+                        const probability = connectionProbability * (2.5 + distanceFactor * 4); // Artırıldı
+                        
+                        if (Math.random() < probability) {
+                            const weight = this.generateRandomWeight();
+                            this.graph.addEdge(nodes[i], distances[k].nodeId, weight);
+                        }
+                    }
+                }
+
+                // Bağlantılılığı garanti et
+                this.ensureConnectivity();
+                
+                // Fazla kenarları temizle (isteğe bağlı)
+                this.limitEdgeCount();
+            }
+
+            limitEdgeCount() {
+                // Daha geniş graf için kenar limitini artır
+                const maxEdges = Math.min(
+                    this.graph.nodeCount * 6, // Her düğüm için maksimum 6 kenar ortalama
+                    this.graph.edges.length
+                );
+                
+                if (this.graph.edges.length > maxEdges) {
+                    // Kenarları ağırlığa göre sırala ve en ağır olanları kaldır
+                    this.graph.edges.sort((a, b) => b.weight - a.weight); // Ağırdan hafife
+                    this.graph.edges = this.graph.edges.slice(-maxEdges); // En hafif olanları al
+                    this.graph.edges.sort((a, b) => a.weight - b.weight); // Tekrar hafiften ağıra sırala
+                }
+            }
+
+            generateRandomWeight() {
+                // Ağırlıkları 1-50 arasında rastgele dağıt
+                return Math.floor(Math.random() * 50) + 1;
+            }
+
+            ensureConnectivity() {
+                // Minimum spanning tree için bağlantılılık gerekli
+                const components = this.findComponents();
+                if (components.length > 1) {
+                    // Componentları birleştir
+                    for (let i = 1; i < components.length; i++) {
+                        const node1 = components[0][0];
+                        const node2 = components[i][0];
+                        const weight = this.generateRandomWeight();
+                        this.graph.addEdge(node1, node2, weight);
+                    }
+                }
+            }
+
+            findComponents() {
+                const visited = new Set();
+                const components = [];
+                
+                for (let nodeId of this.graph.nodes.keys()) {
+                    if (!visited.has(nodeId)) {
+                        const component = [];
+                        const stack = [nodeId];
+                        
+                        while (stack.length > 0) {
+                            const current = stack.pop();
+                            if (!visited.has(current)) {
+                                visited.add(current);
+                                component.push(current);
+                                
+                                // Find neighbors
+                                for (let edge of this.graph.edges) {
+                                    if (edge.from === current && !visited.has(edge.to)) {
+                                        stack.push(edge.to);
+                                    } else if (edge.to === current && !visited.has(edge.from)) {
+                                        stack.push(edge.from);
+                                    }
+                                }
+                            }
+                        }
+                        components.push(component);
+                    }
+                }
+                return components;
+            }
+
+            applyForceLayout() {
+                const iterations = 100;
+                const repulsion = 8000;
+                const attraction = 0.02;
+                const damping = 0.9;
+                
+                for (let iter = 0; iter < iterations; iter++) {
+                    for (let node1 of this.graph.nodes.values()) {
+                        node1.vx = node1.vy = 0;
+                        
+                        // Repulsion
+                        for (let node2 of this.graph.nodes.values()) {
+                            if (node1.id !== node2.id) {
+                                const dx = node1.x - node2.x;
+                                const dy = node1.y - node2.y;
+                                const distance = Math.sqrt(dx * dx + dy * dy) + 0.1;
+                                const force = repulsion / (distance * distance);
+                                
+                                node1.vx += (dx / distance) * force;
+                                node1.vy += (dy / distance) * force;
+                            }
+                        }
+                        
+                        // Attraction for connected nodes
+                        for (let edge of this.graph.edges) {
+                            let other = null;
+                            if (edge.from === node1.id) other = this.graph.nodes.get(edge.to);
+                            else if (edge.to === node1.id) other = this.graph.nodes.get(edge.from);
+                            
+                            if (other) {
+                                const dx = other.x - node1.x;
+                                const dy = other.y - node1.y;
+                                const distance = Math.sqrt(dx * dx + dy * dy);
+                                
+                                if (distance > 0) {
+                                    const force = attraction * distance;
+                                    node1.vx += (dx / distance) * force;
+                                    node1.vy += (dy / distance) * force;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Update positions
+                    for (let node of this.graph.nodes.values()) {
+                        node.x += node.vx * damping;
+                        node.y += node.vy * damping;
+                    }
+                }
+            }
+
+            optimizeLayout() {
+                if (this.isRunning) return;
+                this.applyForceLayout();
+                this.updateStepInfo('Graf düzeni optimize edildi.');
+            }
+
+            centerGraph() {
+                if (this.graph.nodeCount === 0) return;
+                
+                let minX = Infinity, maxX = -Infinity;
+                let minY = Infinity, maxY = -Infinity;
+                
+                for (let node of this.graph.nodes.values()) {
+                    minX = Math.min(minX, node.x);
+                    maxX = Math.max(maxX, node.x);
+                    minY = Math.min(minY, node.y);
+                    maxY = Math.max(maxY, node.y);
+                }
+                
+                // Graf sınırlarına padding ekle
+                const padding = 100;
+                minX -= padding;
+                maxX += padding;
+                minY -= padding;
+                maxY += padding;
+                
+                const graphWidth = maxX - minX;
+                const graphHeight = maxY - minY;
+                const canvasWidth = this.canvas.width / devicePixelRatio;
+                const canvasHeight = this.canvas.height / devicePixelRatio;
+                
+                // Graf merkezi
+                const graphCenterX = (minX + maxX) / 2;
+                const graphCenterY = (minY + maxY) / 2;
+                
+                // Zoom seviyesini hesapla - grafın %90'ı görünür olacak şekilde
+                const zoomX = (canvasWidth * 0.9) / graphWidth;
+                const zoomY = (canvasHeight * 0.9) / graphHeight;
+                this.camera.zoom = Math.min(2.0, Math.max(0.2, Math.min(zoomX, zoomY)));
+                
+                // Kamera pozisyonu - graf merkezi canvas merkezinde olacak şekilde
+                this.camera.x = graphCenterX - (canvasWidth / 2) / this.camera.zoom;
+                this.camera.y = graphCenterY - (canvasHeight / 2) / this.camera.zoom;
+                
+                this.updateZoomDisplay();
+            }
+
+            async startKruskals() {
+                if (this.graph.edges.length === 0) {
+                    alert('Graf oluşturun!');
+                    return;
+                }
+
+                this.isRunning = true;
+                this.isPaused = false;
+                this.stepMode = false;
+                this.currentStep = 0;
+                this.currentEdgeIndex = 0;
+                this.mstEdges = [];
+                this.totalCost = 0;
+                
+                this.graph.reset();
+                this.unionFind = new UnionFind(this.graph.nodeCount);
+                
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('pauseBtn').disabled = false;
+                
+                this.animationSpeed = parseInt(document.getElementById('speed').value);
+
+                await this.kruskalsAlgorithm();
+            }
+
+            async kruskalsAlgorithm() {
+                this.updateStepInfo('Kruskal\'s algoritması başlatıldı. Kenarlar ağırlığa göre sıralanmış durumda.');
+                
+                const requiredEdges = this.graph.nodeCount - 1;
+                
+                for (let i = 0; i < this.graph.edges.length && this.mstEdges.length < requiredEdges; i++) {
+                    // Sıfırla butonuna basıldıysa döngüyü kır
+                    if (this.shouldStop || !this.isRunning) {
+                        break;
+                    }
+                    
+                    if (this.isPaused) {
+                        await this.waitForResume();
+                        // Pause sırasında sıfırla butonuna basıldıysa döngüyü kır
+                        if (this.shouldStop || !this.isRunning) {
+                            break;
+                        }
+                    }
+
+                    this.currentEdgeIndex = i;
+                    const edge = this.graph.edges[i];
+                    
+                    // Mevcut kenarı vurgula
+                    edge.status = 'current';
+                    this.currentStep++;
+                    
+                    this.updateStepInfo(`Adım ${this.currentStep}: Kenar (${edge.from}, ${edge.to}) ağırlık ${edge.weight} inceleniyor...`);
+                    this.updateEdgeList();
+                    this.updateUnionFindDisplay();
+                    
+                    // Güncel animasyon hızını kullan
+                    this.animationSpeed = parseInt(document.getElementById('speed').value);
+                    await this.sleep(this.animationSpeed);
+                    
+                    // Tekrar kontrol et
+                    if (this.shouldStop || !this.isRunning) {
+                        break;
+                    }
+
+                    // Union-Find ile cycle kontrolü
+                    if (!this.unionFind.connected(edge.from, edge.to)) {
+                        // Kenarı kabul et
+                        edge.status = 'accepted';
+                        this.mstEdges.push(edge);
+                        this.totalCost += edge.weight;
+                        this.unionFind.union(edge.from, edge.to);
+                        
+                        this.updateStepInfo(`✅ Kenar (${edge.from}, ${edge.to}) MST'ye eklendi. Toplam maliyet: ${this.totalCost}`);
+                    } else {
+                        // Kenarı reddet (cycle oluşturur)
+                        edge.status = 'rejected';
+                        this.updateStepInfo(`❌ Kenar (${edge.from}, ${edge.to}) reddedildi (cycle oluşturacaktı).`);
+                    }
+                    
+                    this.updateStats();
+                    this.updateEdgeList();
+                    this.updateUnionFindDisplay();
+                    
+                    await this.sleep(this.animationSpeed / 2);
+                    
+                    // Son kontrol
+                    if (this.shouldStop || !this.isRunning) {
+                        break;
+                    }
+                }
+
+                // Sadece normale biterse mesaj göster
+                if (this.isRunning && !this.shouldStop) {
+                    if (this.mstEdges.length === this.graph.nodeCount - 1) {
+                        this.updateStepInfo(`🎉 Minimum Spanning Tree tamamlandı! Toplam maliyet: ${this.totalCost}`);
+                    } else {
+                        this.updateStepInfo(`⚠️ Graf bağlantılı değil. MST oluşturulamadı.`);
+                    }
+                }
+
+                // Animasyon bittiğinde butonları güncelle
+                if (this.isRunning) {
+                    this.isRunning = false;
+                    document.getElementById('startBtn').disabled = false;
+                    document.getElementById('pauseBtn').disabled = true;
+                }
+            }
+
+            resetVisualization() {
+                // Sistemi tamamen sıfırla ve durdur
+                this.isRunning = false;
+                this.isPaused = false;
+                this.stepMode = false;
+                this.stepWaiting = false;
+                this.mstEdges = [];
+                this.totalCost = 0;
+                this.currentStep = 0;
+                this.currentEdgeIndex = 0;
+                
+                // Graf durumunu sıfırla
+                if (this.graph && this.graph.edges) {
+                    this.graph.reset();
+                }
+                
+                // Union-Find'ı yeniden oluştur
+                if (this.graph && this.graph.nodeCount > 0) {
+                    this.unionFind = new UnionFind(this.graph.nodeCount);
+                } else {
+                    this.unionFind = null;
+                }
+                
+                // Görsel efektleri temizle
+                this.highlightedEdge = null;
+                this.previewEdge = null;
+                this.userScrolledEdgeList = false;
+                
+                // Timeout'ları temizle
+                if (this.scrollResetTimeout) {
+                    clearTimeout(this.scrollResetTimeout);
+                    this.scrollResetTimeout = null;
+                }
+                
+                // Buton durumlarını sıfırla
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('pauseBtn').disabled = true;
+                document.getElementById('pauseBtn').textContent = 'Duraklat';
+                
+                // Ekranı güncelle
+                this.updateStats();
+                this.updateEdgeList();
+                this.updateUnionFindDisplay();
+                this.updateStepInfo('Sıfırlandı. "Kruskal\'s Başlat" butonuna tıklayın.');
+                
+                // Herhangi bir çalışan animasyon promise'ini iptal etmek için
+                // flag'i true yapıyoruz ki waitForResume döngüsü kırılsın
+                this.shouldStop = true;
+                
+                // Kısa bir süre sonra stop flag'ini temizle
+                setTimeout(() => {
+                    this.shouldStop = false;
+                }, 100);
+            }
+
+            togglePause() {
+                this.isPaused = !this.isPaused;
+                document.getElementById('pauseBtn').textContent = this.isPaused ? 'Devam Et' : 'Duraklat';
+            }
+
+            async waitForResume() {
+                while (this.isPaused && !this.shouldStop && this.isRunning) {
+                    await this.sleep(100);
+                }
+            }
+
+            sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            // Zoom functions
+            zoomIn() {
+                this.camera.zoom = Math.min(5, this.camera.zoom * 1.2);
+                this.updateZoomDisplay();
+            }
+
+            zoomOut() {
+                this.camera.zoom = Math.max(0.1, this.camera.zoom / 1.2);
+                this.updateZoomDisplay();
+            }
+
+            resetView() {
+                this.camera.x = 0;
+                this.camera.y = 0;
+                this.camera.zoom = 1;
+                this.updateZoomDisplay();
+            }
+
+            updateZoomDisplay() {
+                document.getElementById('zoomLevel').textContent = Math.round(this.camera.zoom * 100) + '%';
+            }
+
+            // Update functions
+            updateStats() {
+                const progress = this.graph.edges.length > 0 ? 
+                    Math.round((this.currentEdgeIndex / this.graph.edges.length) * 100) : 0;
+                
+                document.getElementById('totalNodes').textContent = this.graph.nodeCount;
+                document.getElementById('totalEdges').textContent = this.graph.edges.length;
+                document.getElementById('mstEdges').textContent = `${this.mstEdges.length}/${this.graph.nodeCount - 1}`;
+                document.getElementById('totalCost').textContent = this.totalCost;
+                document.getElementById('processedEdges').textContent = this.currentEdgeIndex;
+                document.getElementById('currentStep').textContent = this.currentStep;
+                document.getElementById('progress').textContent = `${progress}%`;
+            }
+
+            updateStepInfo(message) {
+                document.getElementById('stepInfo').innerHTML = `<strong>Durum:</strong> ${message}`;
+            }
+
+            updateEdgeList() {
+                const container = document.getElementById('edgeListContainer');
+                container.innerHTML = '';
+                
+                // Tüm kenarları göster
+                this.graph.edges.forEach((edge, index) => {
+                    const item = document.createElement('div');
+                    item.className = `edge-item ${edge.status}`;
+                    item.style.cursor = 'pointer';
+                    item.innerHTML = `
+                        <div class="edge-info">${edge.from}→${edge.to}</div>
+                        <div class="edge-weight">${edge.weight}</div>
+                        <div class="edge-status"></div>
+                    `;
+                    
+                    // Kenar tıklama eventi - kenarı vurgula ve zoom yap
+                    item.addEventListener('click', () => {
+                        // Önceki vurgulamayı temizle
+                        this.highlightedEdge = null;
+                        
+                        // Kısa bir gecikme ile yeni kenarı vurgula
+                        setTimeout(() => {
+                            this.highlightedEdge = edge;
+                            this.zoomToEdge(edge);
+                        }, 50);
+                    });
+                    
+                    // Hover efekti
+                    item.addEventListener('mouseenter', () => {
+                        if (!item.classList.contains('current')) {
+                            item.style.background = 'rgba(255, 255, 255, 0.1)';
+                            this.previewEdgeOnCanvas(edge);
+                        }
+                    });
+                    
+                    item.addEventListener('mouseleave', () => {
+                        if (!item.classList.contains('current')) {
+                            item.style.background = '';
+                            this.clearEdgePreview();
+                        }
+                    });
+                    
+                    // İşlenen kenarı ortala - sadece algoritma çalışırken
+                    if (index === this.currentEdgeIndex && this.isRunning && !this.userScrolledEdgeList) {
+                        // Biraz gecikme ile scroll (DOM update'ini bekle)
+                        setTimeout(() => {
+                            item.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'center' 
+                            });
+                        }, 100);
+                    }
+                    
+                    container.appendChild(item);
+                });
+                
+                // Scroll tracking için event listener
+                if (!this.edgeListScrollListener) {
+                    container.addEventListener('scroll', () => {
+                        if (this.isRunning) {
+                            this.userScrolledEdgeList = true;
+                            // 2 saniye sonra auto-scroll'u tekrar aç
+                            clearTimeout(this.scrollResetTimeout);
+                            this.scrollResetTimeout = setTimeout(() => {
+                                this.userScrolledEdgeList = false;
+                            }, 2000);
+                        }
+                    });
+                    this.edgeListScrollListener = true;
+                }
+            }
+
+            highlightEdgeOnCanvas(edge) {
+                // Canvas'ta kenarı vurgula
+                this.highlightedEdge = edge;
+                
+                // Kenar detaylarını göster
+                this.showEdgeInfo(edge);
+                
+                // Kenara zoom yap
+                this.zoomToEdge(edge);
+            }
+
+            zoomToEdge(edge) {
+                const node1 = this.graph.nodes.get(edge.from);
+                const node2 = this.graph.nodes.get(edge.to);
+                
+                if (!node1 || !node2) return;
+                
+                // Canvas boyutları
+                const canvasWidth = this.canvas.width / devicePixelRatio;
+                const canvasHeight = this.canvas.height / devicePixelRatio;
+                
+                // Kenarın sınırlarını hesapla (padding ile)
+                const padding = 150; // Kenar etrafında boşluk
+                const minX = Math.min(node1.x, node2.x) - padding;
+                const maxX = Math.max(node1.x, node2.x) + padding;
+                const minY = Math.min(node1.y, node2.y) - padding;
+                const maxY = Math.max(node1.y, node2.y) + padding;
+                
+                const edgeWidth = maxX - minX;
+                const edgeHeight = maxY - minY;
+                
+                // Kenarın orta noktasını hesapla
+                const centerX = (minX + maxX) / 2;
+                const centerY = (minY + maxY) / 2;
+                
+                // Uygun zoom seviyesini hesapla - kenar görünür alanda olacak şekilde
+                const zoomX = canvasWidth * 0.8 / edgeWidth;
+                const zoomY = canvasHeight * 0.8 / edgeHeight;
+                const targetZoom = Math.min(Math.max(zoomX, zoomY), 3.0); // En fazla 3x zoom
+                
+                // Kamera pozisyonunu hesapla - kenar merkezde olacak şekilde
+                const targetCameraX = centerX - (canvasWidth / 2) / targetZoom;
+                const targetCameraY = centerY - (canvasHeight / 2) / targetZoom;
+                
+                // Smooth zoom animasyonu
+                this.animateCamera(targetCameraX, targetCameraY, Math.max(targetZoom, 0.5));
+            }
+
+            animateCamera(targetX, targetY, targetZoom) {
+                // Hedef değerleri sınırla ve kontrol et
+                targetZoom = Math.max(0.3, Math.min(3.0, targetZoom));
+                
+                const startX = this.camera.x;
+                const startY = this.camera.y;
+                const startZoom = this.camera.zoom;
+                
+                // Eğer hedef çok yakınsa animasyonu atla
+                const deltaX = Math.abs(targetX - startX);
+                const deltaY = Math.abs(targetY - startY);
+                const deltaZoom = Math.abs(targetZoom - startZoom);
+                
+                if (deltaX < 50 && deltaY < 50 && deltaZoom < 0.1) {
+                    this.camera.x = targetX;
+                    this.camera.y = targetY;
+                    this.camera.zoom = targetZoom;
+                    this.updateZoomDisplay();
+                    return;
+                }
+                
+                const duration = 800; // Daha uzun animasyon
+                const startTime = Date.now();
+                
+                const animate = () => {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    // Smooth ease-in-out animasyon
+                    const easeProgress = progress < 0.5 
+                        ? 2 * progress * progress 
+                        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                    
+                    // Interpolate camera values
+                    this.camera.x = startX + (targetX - startX) * easeProgress;
+                    this.camera.y = startY + (targetY - startY) * easeProgress;
+                    this.camera.zoom = startZoom + (targetZoom - startZoom) * easeProgress;
+                    
+                    this.updateZoomDisplay();
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    }
+                };
+                
+                animate();
+            }
+
+            previewEdgeOnCanvas(edge) {
+                this.previewEdge = edge;
+            }
+
+            clearEdgePreview() {
+                this.previewEdge = null;
+            }
+
+            showEdgeInfo(edge) {
+                // Canvas üzerinde kenar bilgisi göster
+                this.edgeInfoOverlay = {
+                    edge: edge,
+                    timestamp: Date.now()
+                };
+            }
+
+            updateUnionFindDisplay() {
+                const container = document.getElementById('unionFindContainer');
+                container.innerHTML = '';
+                
+                if (!this.unionFind) return;
+                
+                const components = this.unionFind.getComponents();
+                
+                // Büyük graflar için özel görselleştirme
+                if (this.graph.nodeCount > 50) {
+                    this.renderLargeGraphUnionFind(container, components);
+                } else {
+                    this.renderSmallGraphUnionFind(container, components);
+                }
+            }
+
+            renderLargeGraphUnionFind(container, components) {
+                // Başlık - sticky olsun
+                const header = document.createElement('div');
+                header.style.cssText = `
+                    position: sticky;
+                    top: 0;
+                    background: rgba(255, 255, 255, 0.15);
+                    backdrop-filter: blur(10px);
+                    text-align: center;
+                    margin-bottom: 15px;
+                    padding: 10px 5px;
+                    border-radius: 8px;
+                    font-size: 12px;
+                    z-index: 10;
+                `;
+                header.innerHTML = `
+                    <strong>Union-Find Yapısı</strong><br>
+                    <span style="font-size: 10px; opacity: 0.8;">${components.length} component</span>
+                `;
+                container.appendChild(header);
+
+                // Scrollable component grid
+                const scrollContainer = document.createElement('div');
+                scrollContainer.style.cssText = `
+                    max-height: 250px;
+                    overflow-y: auto;
+                    padding-right: 5px;
+                    margin-bottom: 10px;
+                `;
+
+                // Component özet kartları
+                const summary = document.createElement('div');
+                summary.style.cssText = `
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 8px;
+                `;
+
+                components.forEach((component, index) => {
+                    const card = document.createElement('div');
+                    card.style.cssText = `
+                        background: linear-gradient(135deg, rgba(255, 152, 0, 0.3), rgba(255, 193, 7, 0.2));
+                        border-radius: 8px;
+                        padding: 8px 6px;
+                        text-align: center;
+                        border: 1px solid rgba(255, 152, 0, 0.5);
+                        transition: all 0.3s ease;
+                        cursor: pointer;
+                        font-size: 10px;
+                        min-height: 60px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                    `;
+                    
+                    card.innerHTML = `
+                        <div style="font-weight: bold; color: #FF9800; font-size: 8px;">Set ${index + 1}</div>
+                        <div style="font-size: 16px; font-weight: bold; margin: 3px 0; color: white;">${component.length}</div>
+                        <div style="font-size: 7px; opacity: 0.8;">nodes</div>
+                    `;
+                    
+                    // Hover efekti
+                    card.addEventListener('mouseenter', () => {
+                        card.style.transform = 'scale(1.05)';
+                        card.style.background = 'linear-gradient(135deg, rgba(255, 152, 0, 0.5), rgba(255, 193, 7, 0.3))';
+                    });
+                    
+                    card.addEventListener('mouseleave', () => {
+                        card.style.transform = 'scale(1)';
+                        card.style.background = 'linear-gradient(135deg, rgba(255, 152, 0, 0.3), rgba(255, 193, 7, 0.2))';
+                    });
+                    
+                    summary.appendChild(card);
+                });
+
+                scrollContainer.appendChild(summary);
+                container.appendChild(scrollContainer);
+
+                // İstatistikler - sticky bottom
+                const stats = document.createElement('div');
+                stats.style.cssText = `
+                    position: sticky;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.4);
+                    backdrop-filter: blur(10px);
+                    padding: 10px;
+                    border-radius: 8px;
+                    text-align: center;
+                    font-size: 10px;
+                    border-top: 1px solid rgba(255, 255, 255, 0.2);
+                `;
+                
+                const largestComponent = Math.max(...components.map(c => c.length));
+                const avgComponentSize = (this.graph.nodeCount / components.length).toFixed(1);
+                
+                stats.innerHTML = `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; text-align: center;">
+                        <div>
+                            <div style="font-weight: bold; color: #4CAF50; font-size: 12px;">${components.length}</div>
+                            <div style="font-size: 8px; opacity: 0.8;">Components</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: bold; color: #2196F3; font-size: 12px;">${largestComponent}</div>
+                            <div style="font-size: 8px; opacity: 0.8;">En Büyük</div>
+                        </div>
+                        <div>
+                            <div style="font-weight: bold; color: #FF9800; font-size: 12px;">${avgComponentSize}</div>
+                            <div style="font-size: 8px; opacity: 0.8;">Ortalama</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.2);">
+                        <div style="font-size: 9px;">MST Progress: <strong>${this.mstEdges.length}/${this.graph.nodeCount - 1}</strong></div>
+                    </div>
+                `;
+                container.appendChild(stats);
+
+                // Custom scrollbar styling
+                const style = document.createElement('style');
+                style.textContent = `
+                    .union-find-panel ::-webkit-scrollbar {
+                        width: 6px;
+                    }
+                    .union-find-panel ::-webkit-scrollbar-track {
+                        background: rgba(255, 255, 255, 0.1);
+                        border-radius: 3px;
+                    }
+                    .union-find-panel ::-webkit-scrollbar-thumb {
+                        background: rgba(255, 152, 0, 0.5);
+                        border-radius: 3px;
+                    }
+                    .union-find-panel ::-webkit-scrollbar-thumb:hover {
+                        background: rgba(255, 152, 0, 0.7);
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            renderSmallGraphUnionFind(container, components) {
+                // Küçük graflar için detaylı görünüm
+                components.forEach((component, index) => {
+                    const group = document.createElement('div');
+                    group.className = 'component-group';
+                    
+                    const header = document.createElement('div');
+                    header.className = 'component-header';
+                    header.innerHTML = `
+                        <span class="component-title">Set ${index + 1}</span>
+                        <span class="component-size">${component.length} node</span>
+                    `;
+                    
+                    const nodes = document.createElement('div');
+                    nodes.className = 'component-nodes';
+                    nodes.textContent = `{${component.join(', ')}}`;
+                    
+                    group.appendChild(header);
+                    group.appendChild(nodes);
+                    container.appendChild(group);
+                });
+                
+                // Stats
+                const stats = document.createElement('div');
+                stats.className = 'union-find-stats';
+                stats.innerHTML = `
+                    <strong>${components.length}</strong> component | 
+                    <strong>${this.mstEdges.length}</strong>/${this.graph.nodeCount - 1} MST edges
+                `;
+                container.appendChild(stats);
+                
+                // Küçük graflar için açıklama göster
+                const helpDiv = document.getElementById('algorithmHelp');
+                if (helpDiv) {
+                    helpDiv.style.display = 'block';
+                }
+            }
+
+            // Render functions
+            startRenderLoop() {
+                const render = (currentTime) => {
+                    this.updateFPS(currentTime);
+                    this.draw();
+                    requestAnimationFrame(render);
+                };
+                requestAnimationFrame(render);
+            }
+
+            updateFPS(currentTime) {
+                const delta = currentTime - this.lastFrameTime;
+                this.lastFrameTime = currentTime;
+                
+                if (delta > 0) {
+                    this.fps = Math.round(1000 / delta);
+                }
+            }
+
+            draw() {
+                const ctx = this.ctx;
+                const canvasWidth = this.canvas.width / devicePixelRatio;
+                const canvasHeight = this.canvas.height / devicePixelRatio;
+                
+                ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                ctx.save();
+                
+                // Apply camera transform
+                ctx.translate(-this.camera.x * this.camera.zoom, -this.camera.y * this.camera.zoom);
+                ctx.scale(this.camera.zoom, this.camera.zoom);
+
+                // Draw edges
+                this.drawEdges(ctx);
+                
+                // Draw nodes
+                this.drawNodes(ctx);
+
+                ctx.restore();
+            }
+
+            drawEdges(ctx) {
+                for (let edge of this.graph.edges) {
+                    const node1 = this.graph.nodes.get(edge.from);
+                    const node2 = this.graph.nodes.get(edge.to);
+                    
+                    let color, lineWidth;
+                    
+                    // Sadece status'a göre renklendirme
+                    switch (edge.status) {
+                        case 'current':
+                            color = '#2196F3';
+                            lineWidth = 4;
+                            break;
+                        case 'accepted':
+                            color = '#4CAF50';
+                            lineWidth = 3;
+                            break;
+                        case 'rejected':
+                            color = '#f44336';
+                            lineWidth = 2;
+                            break;
+                        default:
+                            color = 'rgba(255, 255, 255, 0.3)';
+                            lineWidth = 1;
+                    }
+                    
+                    // Preview edge (hovered)
+                    if (this.previewEdge && edge.id === this.previewEdge.id) {
+                        color = '#E91E63';
+                        lineWidth = 4;
+                    }
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(node1.x, node1.y);
+                    ctx.lineTo(node2.x, node2.y);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = lineWidth;
+                    ctx.stroke();
+
+                    // Draw weight
+                    if (this.camera.zoom > 0.4) {
+                        const midX = (node1.x + node2.x) / 2;
+                        const midY = (node1.y + node2.y) / 2;
+                        
+                        // Highlighted edge için siyah arka plan
+                        if (this.highlightedEdge && edge.id === this.highlightedEdge.id) {
+                            ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                            ctx.font = 'bold 16px Arial';
+                            const textWidth = ctx.measureText(edge.weight.toString()).width;
+                            ctx.fillRect(midX - textWidth/2 - 6, midY - 12, textWidth + 12, 20);
+                            
+                            ctx.fillStyle = 'white';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(edge.weight.toString(), midX, midY);
+                        } else {
+                            // Normal weight display
+                            ctx.fillStyle = 'white';
+                            ctx.font = 'bold 12px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(edge.weight.toString(), midX, midY);
+                        }
+                    }
+                }
+            }
+
+            drawNodes(ctx) {
+                for (let node of this.graph.nodes.values()) {
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, this.nodeRadius, 0, 2 * Math.PI);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#333';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // Draw node ID
+                    if (this.camera.zoom > 0.6) {
+                        ctx.fillStyle = '#333';
+                        ctx.font = 'bold 11px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(node.id.toString(), node.x, node.y);
+                    }
+                }
+            }
+        }
+
+        // Global app instance
+        let app;
+
+        // Initialize app when page loads
+        window.addEventListener('load', () => {
+            app = new KruskalsApp();
+        });
+    </script>
+</body>
+</html>
